@@ -1,0 +1,131 @@
+replicaCount: 1
+
+image:
+  repository: flower-app
+  tag: latest
+  pullPolicy: IfNotPresent
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+podAnnotations: {}
+podLabels: {}
+
+securityContext:
+  fsGroup: 2000
+
+containerSecurityContext:
+  capabilities:
+    drop:
+      - ALL
+  privileged: false
+  runAsNonRoot: true
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+  runAsUser: 0
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+env:
+  - name: PORT
+    value: "5555"
+  - name: CELERY_BROKER_URL
+    value: "redis://redis:6379/0"
+  - name: TZ
+    value: "Europe/Moscow"
+
+appConfig:
+  enabled: false
+  data: {}
+
+service:
+  type: ClusterIP
+  port: 5555
+  metricsPortName: http
+
+route:
+  enabled: false
+  host: ""
+  path: "/"
+  annotations: {}
+  tls:
+    enabled: true
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect
+
+ingress:
+  enabled: false
+  className: ""
+  host: ""
+  path: /
+  pathType: Prefix
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: ""
+
+metrics:
+  enabled: true
+  path: /metrics
+  interval: 30s
+  scrapeTimeout: 10s
+
+serviceMonitor:
+  enabled: true
+  labels: {}
+
+livenessProbe:
+  enabled: true
+  path: /
+  initialDelaySeconds: 20
+  periodSeconds: 20
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  path: /
+  initialDelaySeconds: 10
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+fluentBit:
+  enabled: true
+  image:
+    repository: cr.fluentbit.io/fluent/fluent-bit
+    tag: 3.0.6
+    pullPolicy: IfNotPresent
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+nodeSelector: {}
+tolerations: []
+affinity: {}
+
+prometheus:
+  enabled: true
+  alertmanager:
+    enabled: false
+  grafana:
+    enabled: false
+  kube-state-metrics:
+    enabled: false
+  prometheus-node-exporter:
+    enabled: false
+  prometheus:
+    prometheusSpec:
+      serviceMonitorSelectorNilUsesHelmValues: false
+      podMonitorSelectorNilUsesHelmValues: false
